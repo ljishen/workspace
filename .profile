@@ -12,6 +12,8 @@
 if [ -n "$BASH_VERSION" ]; then
   # include .bashrc if it exists
   if [ -f "$HOME/.bashrc" ]; then
+    # shellcheck disable=SC1091
+    # shellcheck source=.bashrc
     . "$HOME/.bashrc"
   fi
 fi
@@ -24,6 +26,29 @@ fi
 # set PATH so it includes user's private bin if it exists
 if [ -d "$HOME/.local/bin" ]; then
   PATH="$HOME/.local/bin:$PATH"
+fi
+
+mkdir -p .local/bin
+
+GIT_PROMPT=.local/bin/.git-prompt.sh
+if [[ ! -f "$GIT_PROMPT" ]]; then
+  wget \
+    https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh \
+    -O "$GIT_PROMPT" > /dev/null 2>&1
+fi
+
+if [[ -f "$GIT_PROMPT" ]]; then
+  # shellcheck disable=SC1091
+  # shellcheck source=.local/bin/.git-prompt.sh
+  source "$GIT_PROMPT"
+
+  SHELL_NAME="$(basename "$SHELL")"
+  if [[ "$SHELL_NAME" == "bash" ]]; then
+    PS1='[\u@\h \W$(__git_ps1 " (%s)")]\$ '
+  elif [[ "$SHELL_NAME" == "zsh" ]]; then
+    setopt PROMPT_SUBST
+    PS1='[%n@%m %c$(__git_ps1 " (%s)")]\$ '
+  fi
 fi
 
 # This function update the name of window for tmux
