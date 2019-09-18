@@ -35,7 +35,6 @@ ssh() {
   if ((!outside_tmux)); then
     printf "\\033k%s\\033\\" \
       "$(echo "$*" | awk '$1 !~ /^-/ { print $1 }' RS=' ' | rev | cut -d '@' -f 1 | rev)"
-    echo "12123"
   fi
 
   command ssh "$@"
