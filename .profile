@@ -29,7 +29,7 @@ fi
 # This function update the name of window for tmux
 ssh() {
   # shellcheck disable=SC2009
-  ps -p "$(ps -p $$ -o ppid=)" -o comm= 2> /dev/null | grep -w tmux > /dev/null
+  ps -p "$(ps -p $$ -o ppid= | tr -d '[:space:]')" -o comm= 2> /dev/null | grep -w tmux > /dev/null
   outside_tmux="$?"
 
   if ((!outside_tmux)); then
