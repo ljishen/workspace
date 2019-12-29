@@ -12,8 +12,8 @@ add_content() {
   fi
 
   local start_marker end_marker content
-  start_marker="#### START dotfiles CONTROL"
-  end_marker="### END dotfiles CONTROL"
+  start_marker="#### BEGIN dotfiles MANAGED BLOCK"
+  end_marker="### END dotfiles MANAGED BLOCK"
 
   content=$(
     cat << END_HEREDOC
