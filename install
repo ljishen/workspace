@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+set -eu -o pipefail
+
+# Add startup functions
+
+add_content() {
+  local file="$1"
+
+  if [[ ! -f "$file" ]]; then
+    return 1
+  fi
+
+  local start_marker end_marker content
+  start_marker="#### START dotfiles CONTROL"
+  end_marker="### END dotfiles CONTROL"
+
+  content=$(
+    cat << END_HEREDOC
+
+$start_marker
+
+$(curl -fsSL https://raw.githubusercontent.com/ljishen/dotfiles/master/.bashrc)
+
+$end_marker
+END_HEREDOC
+  )
+
+  if ! grep "$start_marker" "$file" > /dev/null 2>&1; then
+    echo "$content" >> "$file"
+  fi
+}
+
+add_content "$HOME/.bash_profile" || add_content "$HOME/.bash_login" || add_content "$HOME/.profile"
