@@ -26,9 +26,16 @@ $end_marker
 END_HEREDOC
   )
 
-  if ! grep "$start_marker" "$file" > /dev/null 2>&1; then
-    echo "$content" >> "$file"
-  fi
+  # remove obsolete content
+  sed -i "/$start_marker/,/$end_marker/d" "$file"
+
+  # Delete all trailing blank lines at end of file
+  #   http://sed.sourceforge.net/sed1line.txt
+  sed -i -e :a -e '/^\n*$/{$d;N;ba' -e '}' "$file"
+
+  echo "$content" >> "$file"
 }
 
 add_content "$HOME/.bash_profile" || add_content "$HOME/.bash_login" || add_content "$HOME/.profile"
+
+echo "Done!"
