@@ -26,13 +26,13 @@ ssh() {
   outside_tmux="$?"
 
   if ((!outside_tmux)); then
-    printf "\\033k%s\\033\\" \
+    tmux rename-window \
       "$(echo "$*" | awk '$1 !~ /^-|^[0-9]+$/ { print $1 }' RS=' ' | rev | cut -d '@' -f 1 | rev)"
   fi
 
   command ssh "$@"
 
   if ((!outside_tmux)); then
-    printf "\\033k%s\\033\\" "$(basename "$SHELL")"
+    tmux rename-window "$(basename "$SHELL")"
   fi
 }
