@@ -8,6 +8,7 @@ if [[ ! -f "$GIT_PROMPT" ]]; then
 fi
 
 if [[ -f "$GIT_PROMPT" ]]; then
+  # shellcheck source=/dev/null
   source "$GIT_PROMPT"
 
   SHELL_NAME="$(basename "$SHELL")"
@@ -20,6 +21,8 @@ if [[ -f "$GIT_PROMPT" ]]; then
 fi
 
 if [[ ! -d .tmux ]]; then
+  echo "Install tmux configuration..."
+  # See https://github.com/gpakosz/.tmux
   git clone https://github.com/gpakosz/.tmux.git
   ln -s -f .tmux/.tmux.conf
   cp .tmux/.tmux.conf.local .
