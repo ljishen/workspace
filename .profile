@@ -21,7 +21,7 @@ if [[ -f "$GIT_PROMPT" ]]; then
 fi
 
 if [[ ! -d .tmux ]]; then
-  echo "Install tmux configuration..."
+  echo "[INFO] Install tmux configuration..."
   # See https://github.com/gpakosz/.tmux
   git clone https://github.com/gpakosz/.tmux.git
   ln -s -f .tmux/.tmux.conf
