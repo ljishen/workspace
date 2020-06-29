@@ -20,7 +20,7 @@ add_content() {
 
 $start_marker
 
-$(curl -fsSL https://raw.githubusercontent.com/ljishen/dotfiles/master/.bashrc)
+$(curl -fsSL https://raw.githubusercontent.com/ljishen/dotfiles/master/.profile)
 
 $end_marker
 END_HEREDOC

@@ -19,6 +19,12 @@ if [[ -f "$GIT_PROMPT" ]]; then
   fi
 fi
 
+if [[ ! -d .tmux ]]; then
+  git clone https://github.com/gpakosz/.tmux.git
+  ln -s -f .tmux/.tmux.conf
+  cp .tmux/.tmux.conf.local .
+fi
+
 # This function update the name of window for tmux
 ssh() {
   # shellcheck disable=SC2009
