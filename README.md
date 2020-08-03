@@ -1,12 +1,12 @@
 # dotfiles
 
-dotfiles are using in my workspace
+A collection of dotfiles used in my workspace
 
 
 ## Install
 
-To install or update current dotfiles, simply run
+To replicate the my workspace, sumply run
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ljishen/dotfiles/master/install | bash
+curl -fsSL https://raw.githubusercontent.com/ljishen/dotfiles/master/install.sh | bash
 ```
