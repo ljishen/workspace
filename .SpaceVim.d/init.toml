@@ -87,10 +87,4 @@ name = "lang#python"
 name = "lang#java"
 
 [[layers]]
-name = "lang#markdown"
-
-[[layers]]
 name = "lang#dockerfile"
-
-[[layers]]
-name = "lang#ipynb"
