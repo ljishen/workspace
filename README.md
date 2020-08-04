@@ -1,6 +1,4 @@
-# dotfiles
-
-A collection of dotfiles used in my workspace
+A collection of dotfiles used in my workspace.
 
 
 ## Install
