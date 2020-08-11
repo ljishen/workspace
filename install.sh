@@ -87,7 +87,7 @@ SPACEVIM_DIR="$HOME/.SpaceVim"
 trace_on
 curl -sLf https://spacevim.org/install.sh | bash >/dev/null 2>&1
 if [[ "$SPACEVIM_OP" == "install" ]]; then
-  mkdir "$HOME"/.SpaceVim.d
+  mkdir -p "$HOME"/.SpaceVim.d
   curl -fsSLo "$HOME"/.SpaceVim.d/init.toml \
     https://raw.githubusercontent.com/ljishen/dotfiles/master/.SpaceVim.d/init.toml
 
@@ -109,6 +109,9 @@ verlte() { printf '%s\n%s' "$1" "$2" | sort -C -V; }
 VIM_VERSION="$(vim --version | awk 'NR==1 { print $5 }')"
 if ! verlte "8.0" "$VIM_VERSION"; then
   echo "- VIM version is less then 8.0. Consider to upgrade it to a newer version."
+fi
+if ! command -v tmux >/dev/null 2>&1; then
+  echo "- install Tmux"
 fi
 echo "- change the default shell to zsh in file /etc/passwd, or run 'chsh -s \$(which zsh)'"
 echo "- install packages: global, cscope, shellcheck"
