@@ -102,8 +102,14 @@ if [[ "$SPACEVIM_OP" == "install" ]]; then
 fi
 trace_off
 
+
 echo_prog "Optional post-installation actions"
 separator
+verlte() { printf '%s\n%s' "$1" "$2" | sort -C -V; }
+VIM_VERSION="$(vim --version | awk 'NR==1 { print $5 }')"
+if ! verlte "8.0" "$VIM_VERSION"; then
+  echo "- VIM version is less then 8.0. Consider to upgrade it to a newer version."
+fi
 echo "- change the default shell to zsh in file /etc/passwd, or run 'chsh -s \$(which zsh)'"
 echo "- install packages: global, cscope, shellcheck"
 echo
