@@ -30,7 +30,7 @@ export OH_MY_TMUX_DIR=${OH_MY_TMUX_DIR:="$HOME"/.tmux}
 echo_msg "Installation directory: $OH_MY_TMUX_DIR"
 if [[ -d "$OH_MY_TMUX_DIR" ]]; then
   trace_on
-  git -C "$OH_MY_TMUX_DIR" pull
+  ( cd "$OH_MY_TMUX_DIR" && git pull )
   trace_off
 else
   trace_on
@@ -65,7 +65,8 @@ else
   separator
   zshrc="$(curl -fsSL https://raw.githubusercontent.com/ljishen/dotfiles/master/.zshrc)"
   echo_msg "###### diff of my .zshrc ######"
-  diff --color <(cat "$HOME"/.zshrc) <(echo "$zshrc") || {
+  diff --unified=1 <(cat "$HOME"/.zshrc) <(echo "$zshrc") |\
+    sed "s/^-/$(tput setaf 1)&/; s/^+/$(tput setaf 2)&/; s/^@/$(tput setaf 6)&/; s/$/$(tput sgr0)/" || {
     # Exit status is 0 if inputs are the same, 1 if different, 2 if trouble.
     status="$?"
     if (( "$status" < 2 )); then
