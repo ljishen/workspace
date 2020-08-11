@@ -8,23 +8,25 @@ alias trace_on="set -x"
 alias trace_off="{ set +x; } 2>/dev/null; echo"
 
 # more color styles: https://stackoverflow.com/a/28938235
-echo_prog() { printf "\n\033[1;33m[INFO] %s\033[0m\n" "$*"; }
+echo_stage() { printf "\n\033[1;33m[STAGE] %s\033[0m\n" "$*"; }
 separator() { printf "\033[1;33m------------------------------------------\033[0m\n"; }
 echo_msg() { { printf "\033[1;32m%s\033[0m\n" "$*"; } 2>/dev/null; }
 echo_err() { printf "\033[1;31m[ERROR] %s\033[0m\n" "$*" >&2; }
 
-if ! command -v git >/dev/null 2>&1; then
+prog_installed() { command -v "$1" >/dev/null 2>&1; }
+
+if ! prog_installed git; then
   echo_err "Please install git first."
   exit 1
 fi
 
-if ! command -v curl >/dev/null 2>&1; then
+if ! prog_installed curl; then
   echo_err "Please install curl first."
   exit 1
 fi
 
 
-echo_prog "Install/Update Oh My Tmux..."
+echo_stage "Install/Update Oh My Tmux..."
 separator
 export OH_MY_TMUX_DIR=${OH_MY_TMUX_DIR:="$HOME"/.tmux}
 echo_msg "Installation directory: $OH_MY_TMUX_DIR"
@@ -41,9 +43,9 @@ else
 fi
 
 
-echo_prog "Install/Update Oh My Zsh..."
+echo_stage "Install/Update Oh My Zsh..."
 separator
-if ! command -v zsh >/dev/null 2>&1; then
+if ! prog_installed zsh; then
   echo_err "Please install zsh first."
   exit 1
 fi
@@ -61,7 +63,7 @@ else
     env ZSH="$OH_MY_ZSH_DIR" sh >/dev/null 2>&1
   trace_off
 
-  echo_prog "Apply my .zshrc"
+  echo_stage "Apply my .zshrc"
   separator
   zshrc="$(curl -fsSL https://raw.githubusercontent.com/ljishen/dotfiles/master/.zshrc)"
   echo_msg "###### diff of my .zshrc ######"
@@ -80,7 +82,7 @@ else
 fi
 
 
-echo_prog "Install/Update SpaceVim..."
+echo_stage "Install/Update SpaceVim..."
 separator
 SPACEVIM_DIR="$HOME/.SpaceVim"
 [[ -d "$SPACEVIM_DIR" ]] && SPACEVIM_OP=update || SPACEVIM_OP=install
@@ -93,8 +95,7 @@ if [[ "$SPACEVIM_OP" == "install" ]]; then
 
   # fix the vimproc's DLL error
   #   https://spacevim.org/quick-start-guide/#install
-  if command -v make >/dev/null 2>&1 && \
-    command -v gcc >/dev/null 2>&1; then
+  if prog_installed make && prog_installed gcc; then
     make -C "$SPACEVIM_DIR"/bundle/vimproc.vim >/dev/null
   else
     echo_err "Please install make and gcc, then run 'make -C \"\$SPACEVIM_DIR\"/bundle/vimproc.vim'"
@@ -103,18 +104,30 @@ fi
 trace_off
 
 
-echo_prog "Optional post-installation actions"
-separator
 verlte() { printf '%s\n%s' "$1" "$2" | sort -C -V; }
-VIM_VERSION="$(vim --version | awk 'NR==1 { print $5 }')"
-if ! verlte "8.0" "$VIM_VERSION"; then
-  echo "- VIM version is less then 8.0. Consider to upgrade it to a newer version."
+
+echo_stage "Optional post-installation actions"
+separator
+if ! prog_installed vim; then
+  echo "- install VIM"
+else
+  VIM_VERSION="$(vim --version | awk 'NR==1 { print $5 }')"
+  if ! verlte "8.0" "$VIM_VERSION"; then
+    echo "- VIM version is less then 8.0. Consider to upgrade it to a newer version."
+  fi
 fi
-if ! command -v tmux >/dev/null 2>&1; then
+
+if ! prog_installed tmux; then
   echo "- install Tmux"
+else
+  TMUX_VERSION="$(tmux -V | awk '{ print $2 }')"
+  if ! verlte "2.1" "$TMUX_VERSION"; then
+    echo "- Tmux version is less then 2.1. Consider to upgrade it to a newer version."
+  fi
 fi
+
 echo "- change the default shell to zsh in file /etc/passwd, or run 'chsh -s \$(which zsh)'"
 echo "- install packages: global, cscope, shellcheck"
 echo
 
-echo_prog "Done!"
+echo_stage "Done!"
