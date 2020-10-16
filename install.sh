@@ -8,10 +8,10 @@ alias trace_on="set -x"
 alias trace_off="{ set +x; } 2>/dev/null; echo"
 
 # more color styles: https://stackoverflow.com/a/28938235
-echo_stage() { printf "\n\033[1;33m[STAGE] %s\033[0m\n" "$*"; }
-separator() { printf "\033[1;33m------------------------------------------\033[0m\n"; }
-echo_msg() { { printf "\033[1;32m%s\033[0m\n" "$*"; } 2>/dev/null; }
-echo_err() { printf "\033[1;31m[ERROR] %s\033[0m\n" "$*" >&2; }
+echo_stage() { printf "\\n\\033[1;33m[STAGE] %s\\033[0m\\n" "$*"; }
+separator() { printf "\\033[1;33m------------------------------------------\\033[0m\\n"; }
+echo_msg() { { printf "\\033[1;32m%s\\033[0m\\n" "$*"; } 2>/dev/null; }
+echo_err() { printf "\\033[1;31m[ERROR] %s\\033[0m\\n" "$*" >&2; }
 
 prog_installed() { command -v "$1" >/dev/null 2>&1; }
 
