@@ -126,8 +126,17 @@ else
   fi
 fi
 
-echo "- change the default shell to zsh in file /etc/passwd, or run 'chsh -s \$(which zsh)'"
-echo "- install packages: global, cscope, shellcheck"
+package_deps=( global cscope shellcheck )
+for idx in "${!package_deps[@]}"; do
+  if prog_installed "${package_deps[idx]}"; then
+    unset 'package_deps[idx]'
+  fi
+done
+
+if [[ "${#package_deps[@]}" -gt 0 ]]; then
+  echo "- install packages: ${package_deps[*]}"
+fi
+echo "- if you haven't, change the default shell to zsh in file /etc/passwd, or run 'chsh -s \$(which zsh)'"
 echo
 
 echo_stage "Done!"
