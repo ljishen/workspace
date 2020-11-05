@@ -126,7 +126,7 @@ else
   fi
 fi
 
-package_deps=( global cscope shellcheck )
+package_deps=( global cscope shellcheck npm )
 for idx in "${!package_deps[@]}"; do
   if prog_installed "${package_deps[idx]}"; then
     unset 'package_deps[idx]'
@@ -136,7 +136,17 @@ done
 if [[ "${#package_deps[@]}" -gt 0 ]]; then
   echo "- install packages: ${package_deps[*]}"
 fi
-echo "- if you haven't, change the default shell to zsh in file /etc/passwd, or run 'chsh -s \$(which zsh)'"
-echo
 
-echo_stage "Done!"
+# see https://spacevim.org/layers/language-server-protocol/
+if ! prog_installed npm \
+  || ! npm list -g --depth 0 bash-language-server >/dev/null; then
+  echo "- install language server protocol for bash script: \`sudo npm i -g bash-language-server\`"
+fi
+
+# check string contains: https://stackoverflow.com/a/20460402/2926646
+if [[ -n "${SHELL##*/zsh*}" ]]; then
+  echo "- change the default shell to zsh in file /etc/passwd, or run 'chsh -s \$(which zsh)'"
+fi
+
+echo
+echo_stage "Good Job!"
