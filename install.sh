@@ -53,9 +53,7 @@ export OH_MY_ZSH_DIR=${OH_MY_ZSH_DIR:="$HOME"/.oh-my-zsh}
 echo_msg "Installation directory: $OH_MY_ZSH_DIR"
 if [[ -d "$OH_MY_ZSH_DIR" ]]; then
   trace_on
-  # execute the content of command 'upgrade_oh_my_zsh'
-  env ZSH="$OH_MY_ZSH_DIR" sh "$OH_MY_ZSH_DIR/tools/upgrade.sh" >/dev/null
-  command rm -rf "$OH_MY_ZSH_DIR/log/update.lock"
+  ( zsh -c "source $HOME/.zshrc && omz update >/dev/null" )
   trace_off
 else
   trace_on
