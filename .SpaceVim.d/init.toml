@@ -65,6 +65,9 @@ name = "gtags"
 gtagslabel = "pygments"
 
 [[layers]]
+name = "incsearch"
+
+[[layers]]
 name = "lang#c"
 enable_clang_syntax_highlight = true
 
