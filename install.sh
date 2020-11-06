@@ -63,7 +63,7 @@ else
 
   echo_stage "Apply my .zshrc"
   separator
-  zshrc="$(curl -fsSL https://raw.githubusercontent.com/ljishen/dotfiles/master/.zshrc)"
+  zshrc="$(curl -fsSL https://raw.githubusercontent.com/ljishen/workspace/master/.zshrc)"
   echo_msg "###### diff of my .zshrc ######"
   diff --unified=1 <(cat "$HOME"/.zshrc) <(echo "$zshrc") |\
     sed "s/^-/$(tput setaf 1)&/; s/^+/$(tput setaf 2)&/; s/^@/$(tput setaf 6)&/; s/$/$(tput sgr0)/" || {
@@ -87,9 +87,11 @@ SPACEVIM_DIR="$HOME/.SpaceVim"
 trace_on
 curl -sLf https://spacevim.org/install.sh | bash >/dev/null 2>&1
 if [[ "$SPACEVIM_OP" == "install" ]]; then
-  mkdir -p "$HOME"/.SpaceVim.d
+  mkdir -p "$HOME"/.SpaceVim.d/autoload
   curl -fsSLo "$HOME"/.SpaceVim.d/init.toml \
-    https://raw.githubusercontent.com/ljishen/dotfiles/master/.SpaceVim.d/init.toml
+    https://raw.githubusercontent.com/ljishen/workspace/master/.SpaceVim.d/init.toml
+  curl -fsSLo "$HOME"/.SpaceVim.d/autoload/myspacevim.vim \
+    https://raw.githubusercontent.com/ljishen/workspace/master/.SpaceVim.d/autoload/myspacevim.vim
 
   # fix the vimproc's DLL error
   #   https://spacevim.org/quick-start-guide/#install
