@@ -53,7 +53,7 @@ export OH_MY_ZSH_DIR=${OH_MY_ZSH_DIR:="$HOME"/.oh-my-zsh}
 echo_msg "Installation directory: $OH_MY_ZSH_DIR"
 if [[ -d "$OH_MY_ZSH_DIR" ]]; then
   trace_on
-  ( zsh -c "source $HOME/.zshrc && omz update >/dev/null" )
+  ( zsh -c "source $HOME/.zshrc && omz update >/dev/null" && exit )
   trace_off
 else
   trace_on
@@ -104,37 +104,49 @@ fi
 trace_off
 
 
-verlte() { printf '%s\n%s' "$1" "$2" | sort -C -V; }
-
-echo_stage "Optional post-installation actions"
+echo_stage "Post-installation actions"
 separator
-if ! prog_installed vim; then
-  echo "- install VIM"
-else
+
+declare -A PACKAGE_DEPS=(
+  [vim]=VIM
+  [tmux]=Tmux
+  [shellcheck]=ShellCheck
+  [global]=global
+  [cscope]=cscope
+  [ctags]="Exuberant Ctags"
+  [npm]=npm
+)
+
+for comm in "${!PACKAGE_DEPS[@]}"; do
+  if prog_installed "$comm"; then
+    unset PACKAGE_DEPS["$comm"]
+  fi
+done
+
+if [[ "${#PACKAGE_DEPS[@]}" -gt 0 ]]; then
+  printf -v str "%s, " "${PACKAGE_DEPS[@]}"
+  echo "- install programs: ${str%, }"
+fi
+
+vergte() { printf '%s\n%s' "$1" "$2" | sort -C -V; }
+
+if prog_installed vim; then
   VIM_VERSION="$(vim --version | awk 'NR==1 { print $5 }')"
-  if ! verlte "8.0" "$VIM_VERSION"; then
+  if ! vergte "8.0" "$VIM_VERSION"; then
     echo "- VIM version is less then 8.0. Consider to upgrade it to a newer version."
   fi
 fi
 
-if ! prog_installed tmux; then
-  echo "- install Tmux"
-else
+if prog_installed tmux; then
   TMUX_VERSION="$(tmux -V | awk '{ print $2 }')"
-  if ! verlte "2.1" "$TMUX_VERSION"; then
+  if ! vergte "2.1" "$TMUX_VERSION"; then
     echo "- Tmux version is less then 2.1. Consider to upgrade it to a newer version."
   fi
 fi
 
-package_deps=( global cscope shellcheck npm )
-for idx in "${!package_deps[@]}"; do
-  if prog_installed "${package_deps[idx]}"; then
-    unset 'package_deps[idx]'
-  fi
-done
-
-if [[ "${#package_deps[@]}" -gt 0 ]]; then
-  echo "- install packages: ${package_deps[*]}"
+if prog_installed ctags \
+  && ! [[ "$(ctags --version)" =~ Exuberant|Universal ]]; then
+  echo "- install Exuberant Ctags (required by Tagbar: https://github.com/preservim/tagbar)"
 fi
 
 # see https://spacevim.org/layers/language-server-protocol/
