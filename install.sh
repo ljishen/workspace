@@ -76,7 +76,6 @@ else
     fi
   }
   echo "$zshrc" > "$HOME/.zshrc"
-  echo
 fi
 
 
