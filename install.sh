@@ -4,32 +4,36 @@ set -euo pipefail
 
 # https://stackoverflow.com/a/51548669
 shopt -s expand_aliases
-alias trace_on="set -x"
-alias trace_off="{ set +x; } 2>/dev/null; echo"
+alias trace_off="{ set +x; } 2>/dev/null"
+alias trace_on="trace_off; echo; set -x"
+
+# $BASH_SOURCE can be empty, if no named file is involved
+#   https://stackoverflow.com/a/35006505
+export PS4='# ${BASH_SOURCE:-"$0"}:${LINENO} - ${FUNCNAME[0]:+${FUNCNAME[0]}()} > '
 
 # more color styles: https://stackoverflow.com/a/28938235
-echo_stage() { printf "\\n\\033[1;33m[STAGE] %s\\033[0m\\n" "$*"; }
-separator() { printf "\\033[1;33m------------------------------------------\\033[0m\\n"; }
-echo_msg() { { printf "\\033[1;32m%s\\033[0m\\n" "$*"; } 2>/dev/null; }
-echo_err() { printf "\\033[1;31m[ERROR] %s\\033[0m\\n" "$*" >&2; }
+stage() { printf "\\n\\n\\033[1;33m[STAGE] %s\\033[0m\\n" "$*"; }
+separate() { printf "\\033[1;33m------------------------------------------\\033[0m\\n"; }
+msg() { { printf "\\033[1;32m%s\\033[0m\\n" "$*"; } 2>/dev/null; }
+err() { printf "\\033[1;31m[ERROR] %s\\033[0m\\n" "$*" >&2; }
 
 prog_installed() { command -v "$1" >/dev/null 2>&1; }
 
 if ! prog_installed git; then
-  echo_err "Please install git first."
+  err "Please install git first."
   exit 1
 fi
 
 if ! prog_installed curl; then
-  echo_err "Please install curl first."
+  err "Please install curl first."
   exit 1
 fi
 
 
-echo_stage "Install/Update Oh My Tmux..."
-separator
+stage "Install/Update Oh My Tmux..."
+separate
 export OH_MY_TMUX_DIR=${OH_MY_TMUX_DIR:="$HOME"/.tmux}
-echo_msg "Installation directory: $OH_MY_TMUX_DIR"
+msg "Installation directory: $OH_MY_TMUX_DIR"
 if [[ -d "$OH_MY_TMUX_DIR" ]]; then
   trace_on
   ( cd "$OH_MY_TMUX_DIR" && git pull )
@@ -43,17 +47,17 @@ else
 fi
 
 
-echo_stage "Install/Update Oh My Zsh..."
-separator
+stage "Install/Update Oh My Zsh..."
+separate
 if ! prog_installed zsh; then
-  echo_err "Please install zsh first."
+  err "Please install zsh first."
   exit 1
 fi
-export OH_MY_ZSH_DIR=${OH_MY_ZSH_DIR:="$HOME"/.oh-my-zsh}
-echo_msg "Installation directory: $OH_MY_ZSH_DIR"
+export OH_MY_ZSH_DIR=${OH_MY_ZSH_DIR:-"$HOME"/.oh-my-zsh}
+msg "Installation directory: $OH_MY_ZSH_DIR"
 if [[ -d "$OH_MY_ZSH_DIR" ]]; then
   trace_on
-  ( zsh -c "source $HOME/.zshrc && omz update >/dev/null" && exit )
+  ( zsh -c "source $HOME/.zshrc && omz update --unattended >/dev/null" && exit )
   trace_off
 else
   trace_on
@@ -61,50 +65,59 @@ else
     env ZSH="$OH_MY_ZSH_DIR" sh >/dev/null 2>&1
   trace_off
 
-  echo_stage "Apply my .zshrc"
-  separator
-  zshrc="$(curl -fsSL https://raw.githubusercontent.com/ljishen/workspace/master/.zshrc)"
-  echo_msg "###### diff of my .zshrc ######"
-  diff --unified=1 <(cat "$HOME"/.zshrc) <(echo "$zshrc") |\
+  stage "Apply My .zshrc"
+  separate
+  readonly MY_ZSHRC="$(curl -fsSL https://raw.githubusercontent.com/ljishen/workspace/master/.zshrc)"
+  msg "###### diff of my .zshrc ######"
+  diff --unified <(cat "$HOME"/.zshrc) <(echo "$MY_ZSHRC") |\
     sed "s/^-/$(tput setaf 1)&/; s/^+/$(tput setaf 2)&/; s/^@/$(tput setaf 6)&/; s/$/$(tput sgr0)/" || {
     # Exit status is 0 if inputs are the same, 1 if different, 2 if trouble.
     status="$?"
-    if (( "$status" < 2 )); then
+    if (( status < 2 )); then
       true  # we ignore this type of error
     else
       exit "$status"
     fi
   }
-  echo "$zshrc" > "$HOME/.zshrc"
+  echo "$MY_ZSHRC" > "$HOME/.zshrc"
 fi
 
 
-echo_stage "Install/Update SpaceVim..."
-separator
-SPACEVIM_DIR="$HOME/.SpaceVim"
-[[ -d "$SPACEVIM_DIR" ]] && SPACEVIM_OP=update || SPACEVIM_OP=install
+stage "Install/Update SpaceVim..."
+separate
+readonly SPACEVIM_DIR="$HOME/.SpaceVim"
+if [[ -d "$SPACEVIM_DIR" ]]; then
+  readonly SPACEVIM_OP=update
+else
+  readonly SPACEVIM_OP=install
+fi
+msg "Run $SPACEVIM_OP procedural"
 trace_on
 curl -sLf https://spacevim.org/install.sh | bash >/dev/null 2>&1
+trace_off
 if [[ "$SPACEVIM_OP" == "install" ]]; then
+  trace_on
   mkdir -p "$HOME"/.SpaceVim.d/autoload
   curl -fsSLo "$HOME"/.SpaceVim.d/init.toml \
     https://raw.githubusercontent.com/ljishen/workspace/master/.SpaceVim.d/init.toml
   curl -fsSLo "$HOME"/.SpaceVim.d/autoload/myspacevim.vim \
     https://raw.githubusercontent.com/ljishen/workspace/master/.SpaceVim.d/autoload/myspacevim.vim
+  trace_off
 
   # fix the vimproc's DLL error
   #   https://spacevim.org/quick-start-guide/#install
   if prog_installed make && prog_installed gcc; then
+    trace_on
     make -C "$SPACEVIM_DIR"/bundle/vimproc.vim >/dev/null
+    trace_off
   else
-    echo_err "Please install make and gcc, then run 'make -C \"\$SPACEVIM_DIR\"/bundle/vimproc.vim'"
+    err "Please install make and gcc, then run 'make -C \"\$SPACEVIM_DIR\"/bundle/vimproc.vim'"
   fi
 fi
-trace_off
 
 
-echo_stage "Post-installation actions"
-separator
+stage "Post-installation Actions"
+separate
 
 declare -A PACKAGE_DEPS=(
   [vim]=VIM
@@ -130,14 +143,14 @@ fi
 vergte() { printf '%s\n%s' "$1" "$2" | sort -C -V; }
 
 if prog_installed vim; then
-  VIM_VERSION="$(vim --version | awk 'NR==1 { print $5 }')"
+  readonly VIM_VERSION="$(vim --version | awk 'NR==1 { print $5 }')"
   if ! vergte "8.0" "$VIM_VERSION"; then
     echo "- VIM version is less then 8.0. Consider to upgrade it to a newer version."
   fi
 fi
 
 if prog_installed tmux; then
-  TMUX_VERSION="$(tmux -V | awk '{ print $2 }')"
+  readonly TMUX_VERSION="$(tmux -V | awk '{ print $2 }')"
   if ! vergte "2.1" "$TMUX_VERSION"; then
     echo "- Tmux version is less then 2.1. Consider to upgrade it to a newer version."
   fi
@@ -159,5 +172,4 @@ if [[ -n "${SHELL##*/zsh*}" ]]; then
   echo "- change the default shell to zsh in file /etc/passwd, or run 'chsh -s \$(which zsh)'"
 fi
 
-echo
-echo_stage "Good Job!"
+stage "Good Job!"
