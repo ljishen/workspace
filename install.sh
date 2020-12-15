@@ -140,18 +140,18 @@ if [[ "${#PACKAGE_DEPS[@]}" -gt 0 ]]; then
   echo "- install programs: ${str%, }"
 fi
 
-vergte() { printf '%s\n%s' "$1" "$2" | sort -C -V; }
+vergte() { printf '%s\n%s' "$1" "$2" | sort -rCV; }
 
 if prog_installed vim; then
   readonly VIM_VERSION="$(vim --version | awk 'NR==1 { print $5 }')"
-  if ! vergte "8.0" "$VIM_VERSION"; then
+  if ! vergte "$VIM_VERSION" "8.0"; then
     echo "- VIM version is less then 8.0. Consider to upgrade it to a newer version."
   fi
 fi
 
 if prog_installed tmux; then
   readonly TMUX_VERSION="$(tmux -V | awk '{ print $2 }')"
-  if ! vergte "2.1" "$TMUX_VERSION"; then
+  if ! vergte "$TMUX_VERSION" "2.1"; then
     echo "- Tmux version is less then 2.1. Consider to upgrade it to a newer version."
   fi
 fi
