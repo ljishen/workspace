@@ -4,7 +4,7 @@ set -euo pipefail
 
 # https://stackoverflow.com/a/51548669
 shopt -s expand_aliases
-alias trace_on="{ echo; } 2>/dev/null; set -x"
+alias trace_on="{ echo; set -x; } 2>/dev/null"
 alias trace_off="{ set +x; } 2>/dev/null"
 
 # $BASH_SOURCE can be empty, if no named file is involved
