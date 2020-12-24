@@ -91,28 +91,41 @@ if [[ -d "$SPACEVIM_DIR" ]]; then
 else
   readonly SPACEVIM_OP=install
 fi
-msg "Run $SPACEVIM_OP procedural"
+msg "Running $SPACEVIM_OP procedural"
 trace_on
 curl -sLf https://spacevim.org/install.sh | bash >/dev/null 2>&1
 trace_off
 if [[ "$SPACEVIM_OP" == "install" ]]; then
+  msg "Injecting configuration files"
   trace_on
-  mkdir -p "$HOME"/.SpaceVim.d/autoload
   curl -fsSLo "$HOME"/.SpaceVim.d/init.toml \
     https://raw.githubusercontent.com/ljishen/workspace/master/.SpaceVim.d/init.toml
+  mkdir -p "$HOME"/.SpaceVim.d/autoload
   curl -fsSLo "$HOME"/.SpaceVim.d/autoload/myspacevim.vim \
     https://raw.githubusercontent.com/ljishen/workspace/master/.SpaceVim.d/autoload/myspacevim.vim
   trace_off
 
   # fix the vimproc's DLL error
   #   https://spacevim.org/quick-start-guide/#install
+  #   https://github.com/SpaceVim/SpaceVim/issues/544
+  msg "Pre-compiling vimproc.vim"
   if prog_installed make && prog_installed gcc; then
     trace_on
     make -C "$SPACEVIM_DIR"/bundle/vimproc.vim >/dev/null
     trace_off
   else
-    err "Please install make and gcc, then run 'make -C \"\$SPACEVIM_DIR\"/bundle/vimproc.vim'"
+    err "Please install make and gcc, then run 'make -C $SPACEVIM_DIR/bundle/vimproc.vim'"
   fi
+
+  msg "Installing VIM plugins"
+  # - The Ex-mode makes VIM non-interactive and is usually used as part of a
+  #   batch processing script. We use it to silence plugin installation errors.
+  #     https://en.wikibooks.org/wiki/Learning_the_vi_Editor/Vim/Modes#Ex-mode
+  # - Install plugins from command line
+  #     https://github.com/Shougo/dein.vim/issues/232
+  trace_on
+  vim -E +"call dein#install()" +qall
+  trace_off
 fi
 
 
