@@ -124,7 +124,7 @@ if [[ "$SPACEVIM_OP" == "install" ]]; then
   # - Install plugins from command line
   #     https://github.com/Shougo/dein.vim/issues/232
   trace_on
-  vim -E +"call dein#install()" +qall
+  vim -E '+call dein#install()' +qall
   trace_off
 fi
 
