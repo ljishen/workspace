@@ -98,9 +98,9 @@ trace_off
 if [[ "$SPACEVIM_OP" == "install" ]]; then
   msg "Injecting configuration files"
   trace_on
+  mkdir -p "$HOME"/.SpaceVim.d/autoload
   curl -fsSLo "$HOME"/.SpaceVim.d/init.toml \
     https://raw.githubusercontent.com/ljishen/workspace/master/.SpaceVim.d/init.toml
-  mkdir -p "$HOME"/.SpaceVim.d/autoload
   curl -fsSLo "$HOME"/.SpaceVim.d/autoload/myspacevim.vim \
     https://raw.githubusercontent.com/ljishen/workspace/master/.SpaceVim.d/autoload/myspacevim.vim
   trace_off
