@@ -29,6 +29,8 @@ if ! prog_installed curl; then
   exit 1
 fi
 
+msg "Perform installation for user '$USER'"
+
 
 stage "Install/Update Oh My Tmux..."
 separate
@@ -124,7 +126,11 @@ if [[ "$SPACEVIM_OP" == "install" ]]; then
   # - Install plugins from command line
   #     https://github.com/Shougo/dein.vim/issues/232
   trace_on
-  vim -E '+call dein#install()' +qall
+  bash <<EOF
+export PS4="$PS4"
+set -x
+vim -u "$SPACEVIM_DIR"/vimrc -E '+call dein#install()' +qall
+EOF
   trace_off
 fi
 

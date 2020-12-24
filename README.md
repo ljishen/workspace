@@ -7,7 +7,7 @@ A one-liner command to (re-)construct my workspace, which includes three popular
 
 ## Requirements
 
-Bash and Zsh (aka Z shell). Yes, that's it.
+Bash and Zsh (aka Z shell). Yes, that's it. Of course you will also need Internet connection.
 
 
 ## Install
