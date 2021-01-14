@@ -188,7 +188,7 @@ fi
 
 # check string contains: https://stackoverflow.com/a/20460402/2926646
 if [[ -n "${SHELL##*/zsh*}" ]]; then
-  echo "- change the default shell to zsh in file /etc/passwd, or run 'chsh -s \$(which zsh)'"
+  echo "- change the default shell to zsh in file /etc/passwd, or run 'sudo chsh -s \$(which zsh) \$USER'"
 fi
 
 stage "Good Job!"
