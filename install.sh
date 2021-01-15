@@ -93,7 +93,7 @@ if [[ -d "$SPACEVIM_DIR" ]]; then
 else
   readonly SPACEVIM_OP=install
 fi
-msg "Running $SPACEVIM_OP procedural"
+msg "Running the $SPACEVIM_OP procedural"
 trace_on
 curl -sLf https://spacevim.org/install.sh | bash >/dev/null 2>&1
 trace_off
@@ -188,7 +188,15 @@ fi
 
 # check string contains: https://stackoverflow.com/a/20460402/2926646
 if [[ -n "${SHELL##*/zsh*}" ]]; then
-  echo "- change the default shell to zsh in file /etc/passwd, or run 'sudo chsh -s \$(which zsh) \$USER'"
+  # https://superuser.com/a/553939
+  if sudo --non-interactive --validate; then
+    # we have passwordless sudo privileges
+    sudo chsh -s "$(which zsh)" "$USER"
+    echo "- log out and log back in to use zsh"
+  else
+    echo "- change the default shell for you to zsh in file /etc/passwd," \
+      "or simply run 'sudo chsh -s \$(which zsh) \$USER'"
+  fi
 fi
 
 stage "Good Job!"
