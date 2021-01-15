@@ -123,17 +123,22 @@ if [[ "$SPACEVIM_OP" == "install" ]]; then
   # - The Ex-mode makes VIM non-interactive and is usually used as part of a
   #   batch processing script. We use it to silence plugin installation errors.
   #     https://en.wikibooks.org/wiki/Learning_the_vi_Editor/Vim/Modes#Ex-mode
-  # - Install plugins from command line
-  #     https://github.com/Shougo/dein.vim/issues/232
+  # - Install/Update plugins from command line
+  #     https://github.com/Shougo/dein.vim/blob/master/doc/dein.txt#L1248
   bash <<EOF
-echo; set -x; vim -u "$SPACEVIM_DIR"/vimrc -E '+call dein#install()' +qall
+echo; set -x
+vim -e -i NONE -N -s -V1 -u "$SPACEVIM_DIR"/vimrc -U NONE \
+  -c "try | call dein#install() | finally | qall! | endtry"
 EOF
 else
   msg "Updating VIM plugins"
   bash <<EOF
-echo; set -x; vim -u "$SPACEVIM_DIR"/vimrc -E '+call dein#update()' +qall
+echo; set -x
+vim -e -i NONE -N -s -V1 -u "$SPACEVIM_DIR"/vimrc -U NONE \
+  -c "try | call dein#update() | finally | qall! | endtry"
 EOF
 fi
+echo
 
 
 stage "Post-installation Actions"
