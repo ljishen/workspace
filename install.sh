@@ -125,13 +125,14 @@ if [[ "$SPACEVIM_OP" == "install" ]]; then
   #     https://en.wikibooks.org/wiki/Learning_the_vi_Editor/Vim/Modes#Ex-mode
   # - Install plugins from command line
   #     https://github.com/Shougo/dein.vim/issues/232
-  trace_on
   bash <<EOF
-export PS4="$PS4"
-set -x
-vim -u "$SPACEVIM_DIR"/vimrc -E '+call dein#install()' +qall
+echo; set -x; vim -u "$SPACEVIM_DIR"/vimrc -E '+call dein#install()' +qall
 EOF
-  trace_off
+else
+  msg "Updating VIM plugins"
+  bash <<EOF
+echo; set -x; vim -u "$SPACEVIM_DIR"/vimrc -E '+call dein#update()' +qall
+EOF
 fi
 
 
