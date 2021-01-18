@@ -195,9 +195,9 @@ fi
 # check string contains: https://stackoverflow.com/a/20460402/2926646
 if [[ -n "${SHELL##*/zsh*}" ]]; then
   # https://superuser.com/a/553939
-  if sudo --non-interactive --validate; then
+  if sudo --non-interactive --validate 2>/dev/null; then
     # we have passwordless sudo privileges
-    sudo chsh -s "$(which zsh)" "$USER"
+    sudo chsh -s "$(command -v zsh)" "$USER"
     echo "- log out and log back in to use zsh"
   else
     echo "- change the default shell for you to zsh in file /etc/passwd," \
