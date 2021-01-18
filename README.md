@@ -14,5 +14,5 @@ Bash and Zsh (aka Z shell). Yes, that's it. Of course you will also need Interne
 
 The one-liner command
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ljishen/workspace/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ljishen/workspace/main/install.sh | bash
 ```
