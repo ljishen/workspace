@@ -11,11 +11,20 @@ alias trace_off="{ set +x; } 2>/dev/null"
 #   https://stackoverflow.com/a/35006505
 export PS4='# ${BASH_SOURCE:-"$0"}:${LINENO} - ${FUNCNAME[0]:+${FUNCNAME[0]}()} > '
 
-# more color styles: https://stackoverflow.com/a/28938235
-stage() { printf "\\n\\n\\033[1;33m[STAGE] %s\\033[0m\\n" "$*"; }
+FOLLOWUP_MSG_OF_STAGE=0
+stage() {
+  # more color styles: https://stackoverflow.com/a/28938235
+  printf "\\n\\n\\033[1;33m[STAGE] %s\\033[0m\\n" "$*"
+  FOLLOWUP_MSG_OF_STAGE=0
+}
 separate() { printf "\\033[1;33m------------------------------------------\\033[0m\\n"; }
-msg() { printf "\\033[1;32m%s\\033[0m\\n" "$*"; }
-sep_msg() { echo; msg "$*"; }
+msg() {
+  if (( FOLLOWUP_MSG_OF_STAGE )); then
+    echo
+  fi
+  printf "\\033[1;32m%s\\033[0m\\n" "$*"
+  FOLLOWUP_MSG_OF_STAGE=1
+}
 err() { printf "\\033[1;31m[ERROR] %s\\033[0m\\n" "$*" >&2; }
 
 prog_installed() { command -v "$1" >/dev/null 2>&1; }
@@ -69,23 +78,23 @@ export OH_MY_ZSH_DIR=${OH_MY_ZSH_DIR:-"$HOME"/.oh-my-zsh}
 export POWERLEVEL10K_DIR="$OH_MY_ZSH_DIR"/custom/themes/powerlevel10k
 msg "Installation directory: $OH_MY_ZSH_DIR"
 if [[ -d "$OH_MY_ZSH_DIR" ]]; then
-  sep_msg "Updating Oh My Zsh"
+  msg "Updating Oh My Zsh"
   trace_on
   ( zsh -c "source $HOME/.zshrc && omz update --unattended >/dev/null" && exit )
   trace_off
 
-  sep_msg "Updating theme Powerlevel10k"
+  msg "Updating theme Powerlevel10k"
   trace_on
   ( cd "$POWERLEVEL10K_DIR" && git pull )
   trace_off
 else
-  sep_msg "Installing Oh My Zsh"
+  msg "Installing Oh My Zsh"
   trace_on
   curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh |\
     env ZSH="$OH_MY_ZSH_DIR" sh >/dev/null 2>&1
   trace_off
 
-  sep_msg "Installing theme Powerlevel10k"
+  msg "Installing theme Powerlevel10k"
   trace_on
   git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \
     "$POWERLEVEL10K_DIR" >/dev/null 2>&1
@@ -107,14 +116,14 @@ else
     }
   }
 
-  sep_msg "Injecting configuration files"
+  msg "Injecting configuration files"
 
-  sep_msg "###### diff of my .zshrc ######"
+  msg "###### diff of my .zshrc ######"
   readonly MY_ZSHRC="$(curl -fsSL https://raw.githubusercontent.com/ljishen/workspace/main/.zshrc)"
   show_diff "$HOME"/.zshrc "$MY_ZSHRC"
   echo "$MY_ZSHRC" >"$HOME"/.zshrc
 
-  sep_msg "###### diff of my .p10k.zsh ######"
+  msg "###### diff of my .p10k.zsh ######"
   readonly MY_P10K_ZSH="$(curl -fsSL https://raw.githubusercontent.com/ljishen/workspace/main/.p10k.zsh)"
   show_diff "$POWERLEVEL10K_DIR"/config/p10k-lean.zsh "$MY_P10K_ZSH"
   echo "$MY_P10K_ZSH" >"$HOME"/.p10k.zsh
@@ -134,7 +143,7 @@ trace_on
 curl -sLf https://spacevim.org/install.sh | bash >/dev/null 2>&1
 trace_off
 if [[ "$SPACEVIM_OP" == "install" ]]; then
-  sep_msg "Injecting configuration files"
+  msg "Injecting configuration files"
   trace_on
   mkdir -p "$HOME"/.SpaceVim.d/autoload
   curl -fsSLo "$HOME"/.SpaceVim.d/init.toml \
@@ -146,7 +155,7 @@ if [[ "$SPACEVIM_OP" == "install" ]]; then
   # fix the vimproc's DLL error
   #   https://spacevim.org/quick-start-guide/#install
   #   https://github.com/SpaceVim/SpaceVim/issues/544
-  sep_msg "Pre-compiling vimproc.vim"
+  msg "Pre-compiling vimproc.vim"
   if prog_installed make && prog_installed gcc; then
     trace_on
     make -C "$SPACEVIM_DIR"/bundle/vimproc.vim >/dev/null
@@ -155,7 +164,7 @@ if [[ "$SPACEVIM_OP" == "install" ]]; then
     err "Please install make and gcc, then run 'make -C $SPACEVIM_DIR/bundle/vimproc.vim'"
   fi
 
-  sep_msg "Installing VIM plugins"
+  msg "Installing VIM plugins"
   # - The Ex-mode makes VIM non-interactive and is usually used as part of a
   #   batch processing script. We use it to silence plugin installation errors.
   #     https://en.wikibooks.org/wiki/Learning_the_vi_Editor/Vim/Modes#Ex-mode
@@ -167,7 +176,7 @@ vim -e -i NONE -N -s -V1 -u "$SPACEVIM_DIR"/vimrc -U NONE \
   -c "try | call dein#install() | finally | qall! | endtry"
 EOF
 else
-  sep_msg "Updating VIM plugins"
+  msg "Updating VIM plugins"
   bash <<EOF
 set -x
 vim -e -i NONE -N -s -V1 -u "$SPACEVIM_DIR"/vimrc -U NONE \
