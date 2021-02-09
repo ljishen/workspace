@@ -4,7 +4,7 @@ set -euo pipefail
 
 # https://stackoverflow.com/a/51548669
 shopt -s expand_aliases
-alias trace_on="{ echo; set -x; } 2>/dev/null"
+alias trace_on="{ set -x; } 2>/dev/null"
 alias trace_off="{ set +x; } 2>/dev/null"
 
 # $BASH_SOURCE can be empty, if no named file is involved
@@ -14,7 +14,8 @@ export PS4='# ${BASH_SOURCE:-"$0"}:${LINENO} - ${FUNCNAME[0]:+${FUNCNAME[0]}()} 
 # more color styles: https://stackoverflow.com/a/28938235
 stage() { printf "\\n\\n\\033[1;33m[STAGE] %s\\033[0m\\n" "$*"; }
 separate() { printf "\\033[1;33m------------------------------------------\\033[0m\\n"; }
-msg() { { printf "\\033[1;32m%s\\033[0m\\n" "$*"; } 2>/dev/null; }
+msg() { printf "\\033[1;32m%s\\033[0m\\n" "$*"; }
+sep_msg() { echo; msg "$*"; }
 err() { printf "\\033[1;31m[ERROR] %s\\033[0m\\n" "$*" >&2; }
 
 prog_installed() { command -v "$1" >/dev/null 2>&1; }
@@ -49,39 +50,74 @@ else
 fi
 
 
+vergte() { printf '%s\n%s' "$1" "$2" | sort -rCV; }
+
 stage "Install/Update Oh My Zsh..."
 separate
 if ! prog_installed zsh; then
   err "Please install zsh first."
   exit 1
 fi
+ZSH_VERSION="$(zsh --version | cut --delimiter=' ' --fields=2)"
+if ! vergte "$ZSH_VERSION" "5.4"; then
+  # See https://github.com/romkatv/powerlevel10k#what-is-the-minimum-supported-zsh-version
+  err "Require Zsh >= 5.4 (current $ZSH_VERSION)"
+  exit 2
+fi
+
 export OH_MY_ZSH_DIR=${OH_MY_ZSH_DIR:-"$HOME"/.oh-my-zsh}
+export POWERLEVEL10K_DIR="$OH_MY_ZSH_DIR"/custom/themes/powerlevel10k
 msg "Installation directory: $OH_MY_ZSH_DIR"
 if [[ -d "$OH_MY_ZSH_DIR" ]]; then
+  sep_msg "Updating Oh My Zsh"
   trace_on
   ( zsh -c "source $HOME/.zshrc && omz update --unattended >/dev/null" && exit )
   trace_off
+
+  sep_msg "Updating theme Powerlevel10k"
+  trace_on
+  ( cd "$POWERLEVEL10K_DIR" && git pull )
+  trace_off
 else
+  sep_msg "Installing Oh My Zsh"
   trace_on
   curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh |\
     env ZSH="$OH_MY_ZSH_DIR" sh >/dev/null 2>&1
   trace_off
 
-  stage "Apply My .zshrc"
-  separate
-  readonly MY_ZSHRC="$(curl -fsSL https://raw.githubusercontent.com/ljishen/workspace/master/.zshrc)"
-  msg "###### diff of my .zshrc ######"
-  diff --unified <(cat "$HOME"/.zshrc) <(echo "$MY_ZSHRC") |\
-    sed "s/^-/$(tput setaf 1)&/; s/^+/$(tput setaf 2)&/; s/^@/$(tput setaf 6)&/; s/$/$(tput sgr0)/" || {
-    # Exit status is 0 if inputs are the same, 1 if different, 2 if trouble.
-    status="$?"
-    if (( status < 2 )); then
-      true  # we ignore this type of error
-    else
-      exit "$status"
-    fi
+  sep_msg "Installing theme Powerlevel10k"
+  trace_on
+  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \
+    "$POWERLEVEL10K_DIR" >/dev/null 2>&1
+  trace_off
+
+
+  function show_diff() {
+    local -r origin_file="$1" update_content="$2"
+
+    diff --unified <(cat "$origin_file") <(echo "$update_content") |\
+      sed "s/^-/$(tput setaf 1)&/; s/^+/$(tput setaf 2)&/; s/^@/$(tput setaf 6)&/; s/$/$(tput sgr0)/" || {
+      # Exit status is 0 if inputs are the same, 1 if different, 2 if trouble.
+      status="$?"
+      if (( status < 2 )); then
+        true  # we ignore this type of error
+      else
+        exit "$status"
+      fi
+    }
   }
-  echo "$MY_ZSHRC" > "$HOME/.zshrc"
+
+  sep_msg "Injecting configuration files"
+
+  sep_msg "###### diff of my .zshrc ######"
+  readonly MY_ZSHRC="$(curl -fsSL https://raw.githubusercontent.com/ljishen/workspace/main/.zshrc)"
+  show_diff "$HOME"/.zshrc "$MY_ZSHRC"
+  echo "$MY_ZSHRC" >"$HOME"/.zshrc
+
+  sep_msg "###### diff of my .p10k.zsh ######"
+  readonly MY_P10K_ZSH="$(curl -fsSL https://raw.githubusercontent.com/ljishen/workspace/main/.p10k.zsh)"
+  show_diff "$POWERLEVEL10K_DIR"/config/p10k-lean.zsh "$MY_P10K_ZSH"
+  echo "$MY_P10K_ZSH" >"$HOME"/.p10k.zsh
 fi
 
 
@@ -98,19 +134,19 @@ trace_on
 curl -sLf https://spacevim.org/install.sh | bash >/dev/null 2>&1
 trace_off
 if [[ "$SPACEVIM_OP" == "install" ]]; then
-  msg "Injecting configuration files"
+  sep_msg "Injecting configuration files"
   trace_on
   mkdir -p "$HOME"/.SpaceVim.d/autoload
   curl -fsSLo "$HOME"/.SpaceVim.d/init.toml \
-    https://raw.githubusercontent.com/ljishen/workspace/master/.SpaceVim.d/init.toml
+    https://raw.githubusercontent.com/ljishen/workspace/main/.SpaceVim.d/init.toml
   curl -fsSLo "$HOME"/.SpaceVim.d/autoload/myspacevim.vim \
-    https://raw.githubusercontent.com/ljishen/workspace/master/.SpaceVim.d/autoload/myspacevim.vim
+    https://raw.githubusercontent.com/ljishen/workspace/main/.SpaceVim.d/autoload/myspacevim.vim
   trace_off
 
   # fix the vimproc's DLL error
   #   https://spacevim.org/quick-start-guide/#install
   #   https://github.com/SpaceVim/SpaceVim/issues/544
-  msg "Pre-compiling vimproc.vim"
+  sep_msg "Pre-compiling vimproc.vim"
   if prog_installed make && prog_installed gcc; then
     trace_on
     make -C "$SPACEVIM_DIR"/bundle/vimproc.vim >/dev/null
@@ -119,21 +155,21 @@ if [[ "$SPACEVIM_OP" == "install" ]]; then
     err "Please install make and gcc, then run 'make -C $SPACEVIM_DIR/bundle/vimproc.vim'"
   fi
 
-  msg "Installing VIM plugins"
+  sep_msg "Installing VIM plugins"
   # - The Ex-mode makes VIM non-interactive and is usually used as part of a
   #   batch processing script. We use it to silence plugin installation errors.
   #     https://en.wikibooks.org/wiki/Learning_the_vi_Editor/Vim/Modes#Ex-mode
   # - Install/Update plugins from command line
   #     https://github.com/Shougo/dein.vim/blob/master/doc/dein.txt#L1248
   bash <<EOF
-echo; set -x
+set -x
 vim -e -i NONE -N -s -V1 -u "$SPACEVIM_DIR"/vimrc -U NONE \
   -c "try | call dein#install() | finally | qall! | endtry"
 EOF
 else
-  msg "Updating VIM plugins"
+  sep_msg "Updating VIM plugins"
   bash <<EOF
-echo; set -x
+set -x
 vim -e -i NONE -N -s -V1 -u "$SPACEVIM_DIR"/vimrc -U NONE \
   -c "try | call dein#update() | finally | qall! | endtry"
 EOF
@@ -164,8 +200,6 @@ if [[ "${#PACKAGE_DEPS[@]}" -gt 0 ]]; then
   printf -v str "%s, " "${PACKAGE_DEPS[@]}"
   echo "- install programs: ${str%, }"
 fi
-
-vergte() { printf '%s\n%s' "$1" "$2" | sort -rCV; }
 
 if prog_installed vim; then
   readonly VIM_VERSION="$(vim --version | awk 'NR==1 { print $5 }')"
