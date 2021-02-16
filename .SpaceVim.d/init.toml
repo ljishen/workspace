@@ -26,9 +26,9 @@
     enable_tabline_filetype_icon = true
     enable_statusline_mode = false
 
-    # options for the checkers layer
-    enable_neomake = false
-    enable_ale = true
+    # configure the default lint engine to be ale
+    # for the checkers layer
+    lint_engine = 'ale'
 
     bootstrap_before = 'myspacevim#before'
 
