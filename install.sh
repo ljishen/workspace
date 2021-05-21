@@ -27,14 +27,14 @@ msg() {
 }
 err() { printf "\\033[1;31m[ERROR] %s\\033[0m\\n" "$*" >&2; }
 
-prog_installed() { command -v "$1" >/dev/null 2>&1; }
+program_installed() { command -v "$1" >/dev/null 2>&1; }
 
-if ! prog_installed git; then
+if ! program_installed git; then
   err "Please install git first."
   exit 1
 fi
 
-if ! prog_installed curl; then
+if ! program_installed curl; then
   err "Please install curl first."
   exit 1
 fi
@@ -55,6 +55,10 @@ else
   git clone https://github.com/gpakosz/.tmux.git "$OH_MY_TMUX_DIR" >/dev/null 2>&1
   ln --symbolic --force "$OH_MY_TMUX_DIR"/.tmux.conf "$HOME"
   cp --force "$OH_MY_TMUX_DIR"/.tmux.conf.local "$HOME"
+
+  # enable the TPM plugin tmux-resurrect
+  sed --in-place "/set -g @plugin 'tmux-plugins\/tmux-resurrect'/s/^#//" \
+    "$HOME"/.tmux.conf.local
   trace_off
 fi
 
@@ -63,7 +67,7 @@ vergte() { printf '%s\n%s' "$1" "$2" | sort -rCV; }
 
 stage "Install/Update Oh My Zsh..."
 separate
-if ! prog_installed zsh; then
+if ! program_installed zsh; then
   err "Please install zsh first."
   exit 1
 fi
@@ -156,7 +160,7 @@ if [[ "$SPACEVIM_OP" == "install" ]]; then
   #   https://spacevim.org/quick-start-guide/#install
   #   https://github.com/SpaceVim/SpaceVim/issues/544
   msg "Pre-compiling vimproc.vim"
-  if prog_installed make && prog_installed gcc; then
+  if program_installed make && program_installed gcc; then
     trace_on
     make -C "$SPACEVIM_DIR"/bundle/vimproc.vim >/dev/null
     trace_off
@@ -200,7 +204,7 @@ declare -A PACKAGE_DEPS=(
 )
 
 for comm in "${!PACKAGE_DEPS[@]}"; do
-  if prog_installed "$comm"; then
+  if program_installed "$comm"; then
     unset PACKAGE_DEPS["$comm"]
   fi
 done
@@ -210,27 +214,27 @@ if [[ "${#PACKAGE_DEPS[@]}" -gt 0 ]]; then
   echo "- install programs: ${str%, }"
 fi
 
-if prog_installed vim; then
+if program_installed vim; then
   readonly VIM_VERSION="$(vim --version | awk 'NR==1 { print $5 }')"
   if ! vergte "$VIM_VERSION" "8.0"; then
     echo "- VIM version is less then 8.0. Consider to upgrade it to a newer version."
   fi
 fi
 
-if prog_installed tmux; then
+if program_installed tmux; then
   readonly TMUX_VERSION="$(tmux -V | awk '{ print $2 }')"
   if ! vergte "$TMUX_VERSION" "2.1"; then
     echo "- Tmux version is less then 2.1. Consider to upgrade it to a newer version."
   fi
 fi
 
-if prog_installed ctags \
+if program_installed ctags \
   && ! [[ "$(ctags --version)" =~ Exuberant|Universal ]]; then
   echo "- install Exuberant Ctags (required by Tagbar: https://github.com/preservim/tagbar)"
 fi
 
 # see https://spacevim.org/layers/language-server-protocol/
-if ! prog_installed npm \
+if ! program_installed npm \
   || ! npm list -g --depth 0 bash-language-server >/dev/null; then
   echo "- install language server protocol for bash script: \`sudo npm i -g bash-language-server\`"
 fi
