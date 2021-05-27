@@ -335,7 +335,7 @@
 
   # Formatter for Git status.
   #
-  # Example output: master ⇣42⇡42 *42 merge ~42 +42 !42 ?42.
+  # Example output: master wip ⇣42⇡42 *42 merge ~42 +42 !42 ?42.
   #
   # You can edit the function to customize how Git status looks.
   #
@@ -399,6 +399,11 @@
     # Show tracking branch name if it differs from local branch.
     if [[ -n ${VCS_STATUS_REMOTE_BRANCH:#$VCS_STATUS_LOCAL_BRANCH} ]]; then
       res+="${meta}:${clean}${(V)VCS_STATUS_REMOTE_BRANCH//\%/%%}"
+    fi
+
+    # Display "wip" if the latest commit's summary contains "wip" or "WIP".
+    if [[ $VCS_STATUS_COMMIT_SUMMARY == (|*[^[:alnum:]])(wip|WIP)(|[^[:alnum:]]*) ]]; then
+      res+=" ${modified}wip"
     fi
 
     # ⇣42 if behind the remote.
@@ -911,10 +916,10 @@
   #
   # The default format has the following logic:
   #
-  # 1. Display "$P9K_CONTENT $P9K_PYENV_PYTHON_VERSION" if $P9K_PYENV_PYTHON_VERSION is not
-  #   empty and unequal to $P9K_CONTENT.
-  # 2. Otherwise display just "$P9K_CONTENT".
-  typeset -g POWERLEVEL9K_PYENV_CONTENT_EXPANSION='${P9K_CONTENT}${${P9K_PYENV_PYTHON_VERSION:#$P9K_CONTENT}:+ $P9K_PYENV_PYTHON_VERSION}'
+  # 1. Display just "$P9K_CONTENT" if it's equal to "$P9K_PYENV_PYTHON_VERSION" or
+  #    starts with "$P9K_PYENV_PYTHON_VERSION/".
+  # 2. Otherwise display "$P9K_CONTENT $P9K_PYENV_PYTHON_VERSION".
+  typeset -g POWERLEVEL9K_PYENV_CONTENT_EXPANSION='${P9K_CONTENT}${${P9K_CONTENT:#$P9K_PYENV_PYTHON_VERSION(|/*)}:+ $P9K_PYENV_PYTHON_VERSION}'
 
   # Custom icon.
   # typeset -g POWERLEVEL9K_PYENV_VISUAL_IDENTIFIER_EXPANSION='⭐'
@@ -1291,6 +1296,12 @@
       '*'       DEFAULT)
   typeset -g POWERLEVEL9K_AWS_DEFAULT_FOREGROUND=208
   # typeset -g POWERLEVEL9K_AWS_DEFAULT_VISUAL_IDENTIFIER_EXPANSION='⭐'
+
+  # AWS segment format. The following parameters are available within the expansion.
+  #
+  # - P9K_AWS_PROFILE  The name of the current AWS profile.
+  # - P9K_AWS_REGION   The region associated with the current AWS profile.
+  typeset -g POWERLEVEL9K_AWS_CONTENT_EXPANSION='${P9K_AWS_PROFILE//\%/%%}${P9K_AWS_REGION:+ ${P9K_AWS_REGION//\%/%%}}'
 
   #[ aws_eb_env: aws elastic beanstalk environment (https://aws.amazon.com/elasticbeanstalk/) ]#
   # AWS Elastic Beanstalk environment color.
