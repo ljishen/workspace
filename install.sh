@@ -56,8 +56,13 @@ else
   ln --symbolic --force "$OH_MY_TMUX_DIR"/.tmux.conf "$HOME"
   cp --force "$OH_MY_TMUX_DIR"/.tmux.conf.local "$HOME"
 
-  # enable the TPM plugin tmux-resurrect
-  sed --in-place "/set -g @plugin 'tmux-plugins\/tmux-resurrect'/s/^#//" \
+  # enable the TPM plugin tmux-resurrect and restore ssh sessions
+  #   https://github.com/tmux-plugins/tmux-resurrect/blob/master/docs/restoring_programs.md
+  #
+  # selecting lines with address:
+  #   https://www.gnu.org/software/sed/manual/sed.html#Addresses-overview
+  sed --in-place "/set -g @plugin 'tmux-plugins\/tmux-resurrect'/ \
+    {s/^#//;s/$/\\nset -g @resurrect-processes 'ssh'/}" \
     "$HOME"/.tmux.conf.local
   trace_off
 fi
