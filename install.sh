@@ -83,6 +83,21 @@ if ! vergte "$ZSH_VERSION" "5.4"; then
   exit 2
 fi
 
+function show_diff() {
+  local -r origin_file="$1" update_content="$2"
+
+  diff --unified <(cat "$origin_file") <(echo "$update_content") |\
+    sed "s/^-/$(tput setaf 1)&/; s/^+/$(tput setaf 2)&/; s/^@/$(tput setaf 6)&/; s/$/$(tput sgr0)/" || {
+    # Exit status is 0 if inputs are the same, 1 if different, 2 if trouble.
+    status="$?"
+    if (( status < 2 )); then
+      true  # we ignore this type of error
+    else
+      exit "$status"
+    fi
+  }
+}
+
 export OH_MY_ZSH_DIR=${OH_MY_ZSH_DIR:-"$HOME"/.oh-my-zsh}
 export POWERLEVEL10K_DIR="$OH_MY_ZSH_DIR"/custom/themes/powerlevel10k
 msg "Installation directory: $OH_MY_ZSH_DIR"
@@ -108,35 +123,19 @@ else
   git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \
     "$POWERLEVEL10K_DIR" >/dev/null 2>&1
   trace_off
-
-
-  function show_diff() {
-    local -r origin_file="$1" update_content="$2"
-
-    diff --unified <(cat "$origin_file") <(echo "$update_content") |\
-      sed "s/^-/$(tput setaf 1)&/; s/^+/$(tput setaf 2)&/; s/^@/$(tput setaf 6)&/; s/$/$(tput sgr0)/" || {
-      # Exit status is 0 if inputs are the same, 1 if different, 2 if trouble.
-      status="$?"
-      if (( status < 2 )); then
-        true  # we ignore this type of error
-      else
-        exit "$status"
-      fi
-    }
-  }
-
-  msg "Injecting configuration files"
-
-  msg "###### diff of my .zshrc ######"
-  readonly MY_ZSHRC="$(curl -fsSL https://raw.githubusercontent.com/ljishen/workspace/main/.zshrc)"
-  show_diff "$HOME"/.zshrc "$MY_ZSHRC"
-  echo "$MY_ZSHRC" >"$HOME"/.zshrc
-
-  msg "###### diff of my .p10k.zsh ######"
-  readonly MY_P10K_ZSH="$(curl -fsSL https://raw.githubusercontent.com/ljishen/workspace/main/.p10k.zsh)"
-  show_diff "$POWERLEVEL10K_DIR"/config/p10k-lean.zsh "$MY_P10K_ZSH"
-  echo "$MY_P10K_ZSH" >"$HOME"/.p10k.zsh
 fi
+
+msg "Injecting configuration files"
+
+msg "###### diff of my .zshrc ######"
+readonly MY_ZSHRC="$(curl -fsSL https://raw.githubusercontent.com/ljishen/workspace/main/.zshrc)"
+show_diff "$HOME"/.zshrc "$MY_ZSHRC"
+echo "$MY_ZSHRC" >"$HOME"/.zshrc
+
+msg "###### diff of my .p10k.zsh ######"
+readonly MY_P10K_ZSH="$(curl -fsSL https://raw.githubusercontent.com/ljishen/workspace/main/.p10k.zsh)"
+show_diff "$POWERLEVEL10K_DIR"/config/p10k-lean.zsh "$MY_P10K_ZSH"
+echo "$MY_P10K_ZSH" >"$HOME"/.p10k.zsh
 
 
 stage "Install/Update SpaceVim..."
