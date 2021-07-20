@@ -62,7 +62,7 @@ else
   # selecting lines with address:
   #   https://www.gnu.org/software/sed/manual/sed.html#Addresses-overview
   sed --in-place "/set -g @plugin 'tmux-plugins\/tmux-resurrect'/ \
-    {s/^#//;s/$/\\nset -g @resurrect-processes 'ssh'/}" \
+    {s/^#//;s/$/\\nset -g @resurrect-processes 'ssh'\\nset -g @plugin 'tmux-plugins\/tmux-logging'/}" \
     "$HOME"/.tmux.conf.local
   trace_off
 fi
