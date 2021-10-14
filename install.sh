@@ -111,6 +111,15 @@ if [[ -d "$OH_MY_ZSH_DIR" ]]; then
   trace_on
   ( cd "$POWERLEVEL10K_DIR" && git pull )
   trace_off
+
+  msg "Updating zsh-autosuggestions"
+  trace_on
+  (
+    cd ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions &&
+      git fetch &&
+      git reset --hard HEAD
+  )
+  trace_off
 else
   msg "Installing Oh My Zsh"
   trace_on
@@ -122,6 +131,12 @@ else
   trace_on
   git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \
     "$POWERLEVEL10K_DIR" >/dev/null 2>&1
+  trace_off
+
+  msg "Installing zsh-autosuggestions"
+  trace_on
+  git clone https://github.com/zsh-users/zsh-autosuggestions \
+    ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions >/dev/null 2>&1
   trace_off
 fi
 

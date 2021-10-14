@@ -1,7 +1,7 @@
 A one-liner command to (re-)construct my workspace, which includes three popular components:
 
 - [Oh My Tmux](https://github.com/gpakosz/.tmux)
-- [Oh My Zsh](https://ohmyz.sh/) configured with the theme [powerlevel10k](https://github.com/romkatv/powerlevel10k)
+- [Oh My Zsh](https://ohmyz.sh/) configured with theme [powerlevel10k](https://github.com/romkatv/powerlevel10k) and [zsh-autosuggestions](https://github.com/zsh-users/zsh-autosuggestions)
 - [SpaceVim](https://spacevim.org/)
 
 
