@@ -48,7 +48,7 @@ export OH_MY_TMUX_DIR=${OH_MY_TMUX_DIR:="$HOME"/.tmux}
 msg "Installation directory: $OH_MY_TMUX_DIR"
 if [[ -d "$OH_MY_TMUX_DIR" ]]; then
   trace_on
-  ( cd "$OH_MY_TMUX_DIR" && git pull )
+  ( cd "$OH_MY_TMUX_DIR" && git pull --ff-only )
   trace_off
 else
   trace_on
@@ -69,21 +69,7 @@ fi
 
 
 vergte() { printf '%s\n%s' "$1" "$2" | sort -rCV; }
-
-stage "Install/Update Oh My Zsh..."
-separate
-if ! program_installed zsh; then
-  err "Please install zsh first."
-  exit 1
-fi
-ZSH_VERSION="$(zsh --version | cut --delimiter=' ' --fields=2)"
-if ! vergte "$ZSH_VERSION" "5.4"; then
-  # See https://github.com/romkatv/powerlevel10k#what-is-the-minimum-supported-zsh-version
-  err "Require Zsh >= 5.4 (current $ZSH_VERSION)"
-  exit 2
-fi
-
-function show_diff() {
+show_diff() {
   local -r origin_file="$1" update_content="$2"
 
   diff --unified <(cat "$origin_file") <(echo "$update_content") |\
@@ -98,6 +84,19 @@ function show_diff() {
   }
 }
 
+
+stage "Install/Update Oh My Zsh..."
+separate
+if ! program_installed zsh; then
+  err "Please install zsh first."
+  exit 1
+fi
+ZSH_VERSION="$(zsh --version | cut --delimiter=' ' --fields=2)"
+if ! vergte "$ZSH_VERSION" "5.4"; then
+  # See https://github.com/romkatv/powerlevel10k#what-is-the-minimum-supported-zsh-version
+  err "Require Zsh >= 5.4 (current $ZSH_VERSION)"
+  exit 2
+fi
 export OH_MY_ZSH_DIR=${OH_MY_ZSH_DIR:-"$HOME"/.oh-my-zsh}
 export POWERLEVEL10K_DIR="$OH_MY_ZSH_DIR"/custom/themes/powerlevel10k
 msg "Installation directory: $OH_MY_ZSH_DIR"
@@ -109,7 +108,7 @@ if [[ -d "$OH_MY_ZSH_DIR" ]]; then
 
   msg "Updating theme Powerlevel10k"
   trace_on
-  ( cd "$POWERLEVEL10K_DIR" && git pull )
+  ( cd "$POWERLEVEL10K_DIR" && git pull --ff-only )
   trace_off
 
   msg "Updating zsh-autosuggestions"
@@ -155,6 +154,10 @@ echo "$MY_P10K_ZSH" >"$HOME"/.p10k.zsh
 
 stage "Install/Update SpaceVim..."
 separate
+if ! program_installed vim; then
+  err "Please install vim first."
+  exit 1
+fi
 readonly SPACEVIM_DIR="$HOME/.SpaceVim"
 if [[ -d "$SPACEVIM_DIR" ]]; then
   readonly SPACEVIM_OP=update
@@ -233,17 +236,15 @@ if [[ "${#PACKAGE_DEPS[@]}" -gt 0 ]]; then
   echo "- install programs: ${str%, }"
 fi
 
-if program_installed vim; then
-  readonly VIM_VERSION="$(vim --version | awk 'NR==1 { print $5 }')"
-  if ! vergte "$VIM_VERSION" "8.0"; then
-    echo "- VIM version is less then 8.0. Consider to upgrade it to a newer version."
-  fi
+readonly VIM_VERSION="$(vim --version | awk 'NR==1 { print $5 }')"
+if ! vergte "$VIM_VERSION" "8.0"; then
+  echo "- VIM version is less then 8.0. Consider to upgrade it to a newer version."
 fi
 
 if program_installed tmux; then
   readonly TMUX_VERSION="$(tmux -V | awk '{ print $2 }')"
-  if ! vergte "$TMUX_VERSION" "2.1"; then
-    echo "- Tmux version is less then 2.1. Consider to upgrade it to a newer version."
+  if ! vergte "$TMUX_VERSION" "2.4"; then
+    echo "- Tmux version is less then 2.4. Consider to upgrade it to a newer version."
   fi
 fi
 
