@@ -143,7 +143,7 @@ msg "Injecting configuration files"
 
 msg "###### diff of my .zshrc ######"
 readonly MY_ZSHRC="$(curl -fsSL https://raw.githubusercontent.com/ljishen/workspace/main/.zshrc)"
-show_diff "$HOME"/.zshrc "$MY_ZSHRC"
+show_diff "$OH_MY_ZSH_DIR"/templates/zshrc.zsh-template "$MY_ZSHRC"
 echo "$MY_ZSHRC" >"$HOME"/.zshrc
 
 msg "###### diff of my .p10k.zsh ######"
