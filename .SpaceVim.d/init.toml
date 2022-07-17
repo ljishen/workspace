@@ -1,7 +1,7 @@
 #=============================================================================
 # dark_powered.toml --- dark powered configuration example for SpaceVim
-# Copyright (c) 2016-2021 Wang Shidong & Contributors
-# Author: Wang Shidong < wsdjeg at 163.com >
+# Copyright (c) 2016-2022 Wang Shidong & Contributors
+# Author: Wang Shidong < wsdjeg@outlook.com >
 # URL: https://spacevim.org
 # License: GPLv3
 #=============================================================================
@@ -28,19 +28,9 @@
 
     # configure the default lint engine to be ale
     # for the checkers layer
-    lint_engine = 'ale'
+    lint_engine = "ale"
 
     bootstrap_before = 'myspacevim#before'
-
-
-[[layers]]
-name = "VersionControl"
-
-# Enable autocomplete layer
-[[layers]]
-name = "autocomplete"
-auto_completion_return_key_behavior = "complete"
-auto_completion_tab_key_behavior = "smart"
 
 [[layers]]
 name = "colorscheme"
@@ -79,6 +69,9 @@ name = "lang#dockerfile"
 name = "lang#java"
 
 [[layers]]
+name = "lang#markdown"
+
+[[layers]]
 name = "lang#python"
 
 [[layers]]
@@ -104,3 +97,6 @@ name = "tools"
 [[layers]]
 name = "ui"
 enable_scrollbar = true
+
+[[layers]]
+name = "VersionControl"
