@@ -19,7 +19,7 @@ stage() {
 }
 separate() { printf "\\033[1;33m------------------------------------------\\033[0m\\n"; }
 msg() {
-  if (( FOLLOWUP_MSG_OF_STAGE )); then
+  if ((FOLLOWUP_MSG_OF_STAGE)); then
     echo
   fi
   printf "\\033[1;32m%s\\033[0m\\n" "$*"
@@ -41,14 +41,13 @@ fi
 
 msg "Perform installation for user '$USER'"
 
-
 stage "Install/Update Oh My Tmux..."
 separate
 export OH_MY_TMUX_DIR=${OH_MY_TMUX_DIR:="$HOME"/.tmux}
 msg "Installation directory: $OH_MY_TMUX_DIR"
 if [[ -d "$OH_MY_TMUX_DIR" ]]; then
   trace_on
-  ( cd "$OH_MY_TMUX_DIR" && git pull --ff-only )
+  (cd "$OH_MY_TMUX_DIR" && git pull --ff-only)
   trace_off
 else
   trace_on
@@ -67,23 +66,21 @@ else
   trace_off
 fi
 
-
 vergte() { printf '%s\n%s' "$1" "$2" | sort -rCV; }
 show_diff() {
   local -r origin_file="$1" update_content="$2"
 
-  diff --unified <(cat "$origin_file") <(echo "$update_content") |\
+  diff --unified <(cat "$origin_file") <(echo "$update_content") |
     sed "s/^-/$(tput setaf 1)&/; s/^+/$(tput setaf 2)&/; s/^@/$(tput setaf 6)&/; s/$/$(tput sgr0)/" || {
     # Exit status is 0 if inputs are the same, 1 if different, 2 if trouble.
     status="$?"
-    if (( status < 2 )); then
-      true  # we ignore this type of error
+    if ((status < 2)); then
+      true # we ignore this type of error
     else
       exit "$status"
     fi
   }
 }
-
 
 stage "Install/Update Oh My Zsh..."
 separate
@@ -103,12 +100,12 @@ msg "Installation directory: $OH_MY_ZSH_DIR"
 if [[ -d "$OH_MY_ZSH_DIR" ]]; then
   msg "Updating Oh My Zsh"
   trace_on
-  ( zsh -c "source $HOME/.zshrc && omz update --unattended >/dev/null" && exit )
+  (zsh -c "source $HOME/.zshrc && omz update --unattended >/dev/null" && exit)
   trace_off
 
   msg "Updating theme Powerlevel10k"
   trace_on
-  ( cd "$POWERLEVEL10K_DIR" && git pull --ff-only )
+  (cd "$POWERLEVEL10K_DIR" && git pull --ff-only)
   trace_off
 
   msg "Updating zsh-autosuggestions"
@@ -122,7 +119,7 @@ if [[ -d "$OH_MY_ZSH_DIR" ]]; then
 else
   msg "Installing Oh My Zsh"
   trace_on
-  curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh |\
+  curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh |
     env ZSH="$OH_MY_ZSH_DIR" sh >/dev/null 2>&1
   trace_off
 
@@ -150,7 +147,6 @@ msg "###### diff of my .p10k.zsh ######"
 readonly MY_P10K_ZSH="$(curl -fsSL https://raw.githubusercontent.com/ljishen/workspace/main/.p10k.zsh)"
 show_diff "$POWERLEVEL10K_DIR"/config/p10k-lean.zsh "$MY_P10K_ZSH"
 echo "$MY_P10K_ZSH" >"$HOME"/.p10k.zsh
-
 
 stage "Install/Update SpaceVim..."
 separate
@@ -211,7 +207,6 @@ EOF
 fi
 echo
 
-
 stage "Post-installation Actions"
 separate
 
@@ -248,14 +243,14 @@ if program_installed tmux; then
   fi
 fi
 
-if program_installed ctags \
-  && ! [[ "$(ctags --version)" =~ Exuberant|Universal ]]; then
+if program_installed ctags &&
+  ! [[ "$(ctags --version)" =~ Exuberant|Universal ]]; then
   echo "- install Exuberant Ctags (required by Tagbar: https://github.com/preservim/tagbar)"
 fi
 
 # see https://spacevim.org/layers/language-server-protocol/
-if ! program_installed npm \
-  || ! npm list -g --depth 0 bash-language-server >/dev/null; then
+if ! program_installed npm ||
+  ! npm list -g --depth 0 bash-language-server >/dev/null; then
   echo "- install language server protocol for bash script: \`sudo npm i -g bash-language-server\`"
 fi
 
